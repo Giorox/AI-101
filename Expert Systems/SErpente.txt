@@ -1,0 +1,74 @@
+bolhas* = sim | nao
+bradicardia* = sim | nao
+choques_no_local_da_picada* = sim | nao
+diarreia* = sim | nao
+disturbios_de_acomodacao_visual* = sim | nao
+dor_imediata_no_local_da_picada* = sim | nao
+edema* = de_5_segmentos | de_3_a_4_segmentos | local_ate_2_segmentos | presente
+epistaxe* = sim | nao
+equimoses* = sim | nao
+facies_miastemica* = sim | nao
+fasciculacoes_musculares* = sim | nao
+gengirovagia* = sim | nao
+hemorragia_digestiva* = sim | nao
+hemorragia_sistemica* = ausente| discreta | grave
+hipotensao* = sim | nao
+insuficiencia_renal_aguda* = sim | nao
+mialgia* = generalizada | ausente | discreta | intensa
+necrose_local * = sim | nao
+oftalmoplegia* = sim | nao
+oliguria_anuria* = ausente | presente
+paralisia* = ausente | velopalatina | dos_membros | da_musculatura_respiratoria
+ptose_palpebral_bilateral* = sim | nao
+rubor_no_local_da_picada* = sim | nao
+suspeita_genero_da_serpente = botropico | laquetico | crotalico | elapidico
+tempo_de_coagulacao* = normal | alterado
+tempo_desde_acidente_maior_que_6h* = sim | nao
+urina_avermelhada* = ausente | presente | pouco_evidente
+urina_marrom* = ausente | presente | pouco_evidente
+visao_turva* = ausente | tardia | evidente | discreta
+# Variáveis Objetivo
+genero_da_serpente = botropico | laquetico | crotalico | elapidico
+gravidade = leve | moderado | grave
+soroterapia = SAB_SABC_SABL_2-4_ampolas | SAB_SABC_SABL_4-8_ampolas | SAB_SABC_SABL_12_ampolas | SAC_SABC_5_ampolas | SAC_SABC_10_ampolas | SAC_SABC_20_ampolas | SAL_SABL_10-20_ampolas | SAE_10_ampolas
+----------------------------------------------------
+# Regras para descobrir a suspeita do agente causador
+IF dor_imediata_no_local_da_picada = sim & edema = presente & rubor_no_local_da_picada = sim & diarreia = nao & bradicardia = nao THEN suspeita_genero_da_serpente = botropico
+IF dor_imediata_no_local_da_picada = sim & edema = presente & rubor_no_local_da_picada = sim & diarreia = sim & bradicardia = sim THEN suspeita_genero_da_serpente = laquetico
+IF ptose_palpebral_bilateral = sim & oftalmoplegia = sim & disturbios_de_acomodacao_visual = sim & fasciculacoes_musculares = sim & tempo_de_coagulacao = alterado & mialgia = generalizada & urina_avermelhada = presente | pouco_evidente & edema = local_ate_2_segmentos THEN suspeita_genero_da_serpente = crotalico
+IF ptose_palpebral_bilateral = sim & oftalmoplegia = sim & disturbios_de_acomodacao_visual = sim & facies_miastemica = sim & paralisia = velopalatina | dos_membros | da_musculatura_respiratoria THEN suspeita_genero_da_serpente = elapidico
+# Regras para descobrir a o agente causador com certeza e com base no tempo desde o acidente
+IF suspeita_genero_da_serpente = botropico & tempo_desde_acidente_maior_que_6h = sim & bolhas = sim necrose_local = sim THEN genero_da_serpente = botropico
+IF suspeita_genero_da_serpente = botropico & tempo_desde_acidente_maior_que_6h = sim & bolhas = sim necrose_local = sim & equimoses = sim THEN genero_da_serpente = botropico
+IF suspeita_genero_da_serpente = botropico & tempo_desde_acidente_maior_que_6h = sim & bolhas = sim necrose_local = sim & insuficiencia_renal_aguda = sim THEN genero_da_serpente = botropico
+IF suspeita_genero_da_serpente = botropico & tempo_desde_acidente_maior_que_6h = sim & bolhas = sim equimoses = sim & insuficiencia_renal_aguda = sim THEN genero_da_serpente = botropico
+IF suspeita_genero_da_serpente = botropico & tempo_desde_acidente_maior_que_6h = sim & bolhas = sim necrose_local = sim & equimoses = sim & insuficiencia_renal_aguda = sim THEN genero_da_serpente = botropico
+IF suspeita_genero_da_serpente = botropico & tempo_desde_acidente_maior_que_6h = nao THEN genero_da_serpente = botropico
+IF suspeita_genero_da_serpente = laquetico THEN genero_da_serpente = laquetico
+IF suspeita_genero_da_serpente = crotalico & tempo_desde_acidente_maior_que_6h = sim & insuficiencia_renal_aguda = sim THEN genero_da_serpente = crotalico
+IF suspeita_genero_da_serpente = crotalico & tempo_desde_acidente_maior_que_6h = nao THEN genero_da_serpente = crotalico
+IF suspeita_genero_da_serpente = elapidico THEN genero_da_serpente = elapidico
+# Regras para descobrir a gravidade para casos de botrópico
+IF genero_da_serpente = botropico & edema = local_ate_2_segmentos & tempo_de_coagulacao = alterado | normal & hemorragia_sistemica = ausente | discreta THEN gravidade = leve
+IF genero_da_serpente = botropico & edema = de_3_a_4_segmentos & tempo_de_coagulacao = alterado | normal & hemorragia_sistemica = ausente | discreta THEN gravidade = moderado
+IF genero_da_serpente = botropico & edema = de_5_segmentos & tempo_de_coagulacao = alterado | normal & hemorragia_sistemica = grave & choques_no_local_da_picada = sim & hipotensao = sim & insuficiencia_renal_aguda = sim THEN gravidade = grave
+# Regras para descobrir a gravidade para casos de laquético
+IF genero_da_serpente = laquetico & bradicardia = sim & hipotensao = sim & diarreia = sim THEN gravidade = grave
+# Regras para descobrir a gravidade para casos de elapídico
+IF genero_da_serpente = elapidico THEN gravidade = grave
+# Regras para descobrir a gravidade para casos de crotálico
+IF genero_da_serpente = crotalico & visao_turva = ausente | tardia & mialgia = ausente | discreta & urina_avermelhada = ausente & tempo_de_coagulacao = normal | alterado & oliguria_anuria = ausente THEN gravidade = leve
+IF genero_da_serpente = crotalico & visao_turva = ausente | tardia & mialgia = ausente | discreta & urina_marrom = ausente & tempo_de_coagulacao = normal | alterado & oliguria_anuria = ausente THEN gravidade = leve
+IF genero_da_serpente = crotalico & visao_turva = discreta | evidente & mialgia = discreta & urina_avermelhada = ausente | pouco_evidente & tempo_de_coagulacao = normal | alterado & oliguria_anuria = ausente THEN gravidade = moderado
+IF genero_da_serpente = crotalico & visao_turva = discreta | evidente & mialgia = discreta & urina_marrom = ausente | pouco_evidente & tempo_de_coagulacao = normal | alterado & oliguria_anuria = ausente THEN gravidade = moderado
+IF genero_da_serpente = crotalico & visao_turva = evidente & mialgia = intensa & urina_avermelhada = presente & tempo_de_coagulacao = normal | alterado & oliguria_anuria = ausente | presente THEN gravidade = grave
+IF genero_da_serpente = crotalico & visao_turva = evidente & mialgia = intensa & urina_marrom = presente & tempo_de_coagulacao = normal | alterado & oliguria_anuria = ausente | presente THEN gravidade = grave
+# Regras para descobrir a soroterapia para as diferentes gravidades
+IF genero_da_serpente = botropico & gravidade = leve THEN soroterapia = SAB_SABC_SABL_2-4_ampolas
+IF genero_da_serpente = botropico & gravidade = moderado THEN soroterapia = SAB_SABC_SABL_4-8_ampolas
+IF genero_da_serpente = botropico & gravidade = grave THEN soroterapia = SAB_SABC_SABL_12_ampolas
+IF genero_da_serpente = laquetico THEN soroterapia = SAL_SABL_10-20_ampolas
+IF genero_da_serpente = crotalico & gravidade = leve THEN soroterapia = SAC_SABC_5_ampolas
+IF genero_da_serpente = crotalico & gravidade = moderado THEN soroterapia = SAC_SABC_10_ampolas
+IF genero_da_serpente = crotalico & gravidade = grave THEN soroterapia = SAC_SABC_20_ampolas
+IF genero_da_serpente = elapidico THEN soroterapia = SAE_10_ampolas
